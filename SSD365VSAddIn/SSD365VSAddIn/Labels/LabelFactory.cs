@@ -100,62 +100,9 @@ namespace SSD365VSAddIn.Labels
 
         public abstract void ApplyLabel();
 
-        public string GetLabel(string label, string elementTypeName, string propertyName, string subItemName = "")
+        public string GetLabel(string label)
         {
-            string labelToCreate = label;
-            string objectName = this.iRootElement.Name;
-
-            if (objectName.Contains("."))
-            {
-                objectName = objectName.Substring(0, objectName.IndexOf('.') - 1);
-            }
-
-            var currentSettings = Settings.FetchSettings.FindOrCreateSettings();
-
-            if (currentSettings.RecreateSysLabels
-                && labelToCreate.StartsWith("@SYS"))
-            {
-                labelToCreate = $"{objectName}{elementTypeName}{subItemName}{propertyName}";
-
-                var labelFiles = LabelHelper.GetLabelFiles();
-
-                string labelIdsys = "";
-
-                foreach (var labelFile in labelFiles)
-                {
-                    string labelText = LabelHelper.GetLabelTextFromLabelFileWithLanguage("SYS", labelFile.Language, labelToCreate);
-
-                    labelText = string.IsNullOrEmpty(labelText) ? labelToCreate : labelText;
-
-                    labelIdsys = LabelHelper.FindOrCreateLabel(labelText, labelToCreate);
-                }
-
-                if (labelIdsys.Equals(label) == false)
-                {
-                    return labelIdsys;
-                }
-
-                return label;
-            }
-            else if (currentSettings.CreateLabelsForEmptyProperties
-                     && string.IsNullOrEmpty(labelToCreate))
-            {
-                var allowedLabelsType = currentSettings.allowedLabels.GetType();
-
-                var property = allowedLabelsType.GetProperty($"{elementTypeName}{propertyName}");
-
-                if (property != null)
-                {
-                    bool enabled = (bool) property.GetValue(currentSettings.allowedLabels);
-
-                    if (enabled)
-                    {
-                        labelToCreate = $"{objectName}{elementTypeName}{subItemName}{propertyName}";
-                    }
-                }
-            }
-
-            string labelId = LabelHelper.FindOrCreateLabel(labelToCreate);
+            string labelId = LabelHelper.FindOrCreateLabel(label);
             if (labelId.Equals(label) == false)
                 return labelId;
 
@@ -177,8 +124,8 @@ namespace SSD365VSAddIn.Labels
                                         .FirstOrDefault();
             if (String.IsNullOrEmpty(configKeyexists) == false)
             {
-                this.iConfigKey.Label = this.GetLabel(this.iConfigKey.Label, "ConfigurationKey", "Label");
-                this.iConfigKey.Description = this.GetLabel(this.iConfigKey.Description, "ConfigurationKey", "Description");
+                this.iConfigKey.Label = this.GetLabel(this.iConfigKey.Label);
+                this.iConfigKey.Description = this.GetLabel(this.iConfigKey.Description);
             }
         }
 
@@ -208,8 +155,8 @@ namespace SSD365VSAddIn.Labels
 
             if (string.IsNullOrEmpty(tableExists) == false)
             {
-                this.iTable.Label = this.GetLabel(this.iTable.Label, "Table", "Label");
-                this.iTable.DeveloperDocumentation = this.GetLabel(this.iTable.DeveloperDocumentation, "Table", "DeveloperDocumentation");
+                this.iTable.Label = this.GetLabel(this.iTable.Label);
+                this.iTable.DeveloperDocumentation = this.GetLabel(this.iTable.DeveloperDocumentation);
 
                 // Apply label on fields
                 var enumerator = this.iTable.BaseFields.GetEnumerator();
@@ -217,8 +164,8 @@ namespace SSD365VSAddIn.Labels
                 {
                     var baseField = enumerator.Current as IBaseField;
 
-                    baseField.Label = this.GetLabel(baseField.Label, "TableField", baseField.Name + "Label");
-                    baseField.HelpText = this.GetLabel(baseField.HelpText, "TableField", baseField.Name + "HelpText");
+                    baseField.Label = this.GetLabel(baseField.Label);
+                    baseField.HelpText = this.GetLabel(baseField.HelpText);
                 }
 
                 // Apply label for groups
@@ -226,7 +173,7 @@ namespace SSD365VSAddIn.Labels
                 while (fieldGrpEnumerator.MoveNext())
                 {
                     var fieldGroup = fieldGrpEnumerator.Current as IFieldGroup;
-                    fieldGroup.Label = this.GetLabel(fieldGroup.Label, "TableFieldGroup", fieldGroup.Name + "Label");
+                    fieldGroup.Label = this.GetLabel(fieldGroup.Label);
                 }
             }
             
@@ -238,15 +185,10 @@ namespace SSD365VSAddIn.Labels
         private ITableExtension iTableExtension;
         public override void ApplyLabel()
         {
-            var currentModelName = Common.CommonUtil.GetCurrentModel().Name;
-            var tableExtensions = Common.CommonUtil.GetMetaModelProviders()
+            var tableExists = Common.CommonUtil.GetMetaModelProviders()
                                 .CurrentMetadataProvider
-                                .TableExtensions;
-
-            var modelTableExtensions = tableExtensions
-                                .ListObjectsForModel(currentModelName);
-
-            var tableExists = modelTableExtensions
+                                .TableExtensions
+                                .ListObjectsForModel(Common.CommonUtil.GetCurrentModel().Name)
                                 .Where(t => t.Equals(this.iTableExtension.Name))
                                 .FirstOrDefault();
             if (String.IsNullOrEmpty(tableExists) == false)
@@ -257,8 +199,8 @@ namespace SSD365VSAddIn.Labels
                 while(enumerator.MoveNext())
                 {
                     var baseField = enumerator.Current as IBaseField;
-                    baseField.Label = this.GetLabel(baseField.Label, "TableExtensionField", "Label", baseField.Name);
-                    baseField.HelpText = this.GetLabel(baseField.HelpText, "TableExtensionField", "HelpText", baseField.Name);
+                    baseField.Label = this.GetLabel(baseField.Label);
+                    baseField.HelpText = this.GetLabel(baseField.HelpText);
                    
                 }
 
@@ -267,7 +209,7 @@ namespace SSD365VSAddIn.Labels
                 while (fieldGrpEnumerator.MoveNext())
                 {
                     var fieldGroup = fieldGrpEnumerator.Current as IFieldGroup;
-                    fieldGroup.Label = this.GetLabel(fieldGroup.Label, "TableExtensionFieldGroup", "Label", fieldGroup.Name);
+                    fieldGroup.Label = this.GetLabel(fieldGroup.Label);
                 }
             }
         }
@@ -355,8 +297,8 @@ namespace SSD365VSAddIn.Labels
             {
                 if(this.iMenuItem != null)
                 {
-                    this.iMenuItem.Label = this.GetLabel(this.iMenuItem.Label, "MenuItem", "Label");
-                    this.iMenuItem.HelpText = this.GetLabel(this.iMenuItem.HelpText, "MenuItem", "HelpText");
+                    this.iMenuItem.Label = this.GetLabel(this.iMenuItem.Label);
+                    this.iMenuItem.HelpText = this.GetLabel(this.iMenuItem.HelpText);
                 }
             }
         }
@@ -390,7 +332,7 @@ namespace SSD365VSAddIn.Labels
 
             if (string.IsNullOrEmpty(tableExists) == false)
             {
-                this.iFormExtension.FormDesign.Caption = this.GetLabel(this.iFormExtension.FormDesign.Caption, "FromExtensionDesign", "Caption");
+                this.iFormExtension.FormDesign.Caption = this.GetLabel(this.iFormExtension.FormDesign.Caption);
 
                 this.RunEnumerator(this.iFormExtension.FormDesign.VisualChildren);
             }
@@ -418,7 +360,7 @@ namespace SSD365VSAddIn.Labels
 
             if (string.IsNullOrEmpty(tableExists) == false)
             {
-                this.iForm.FormDesign.Caption = this.GetLabel(this.iForm.FormDesign.Caption, "FromDesign", "Caption");
+                this.iForm.FormDesign.Caption = this.GetLabel(this.iForm.FormDesign.Caption);
 
                 this.RunEnumerator(this.iForm.FormDesign.VisualChildren);
             }
@@ -432,17 +374,17 @@ namespace SSD365VSAddIn.Labels
                 var formControl = item as IFormControl;
                 if(formControl != null)
                 {
-                    formControl.HelpText = this.GetLabel(formControl.HelpText, "FormControl", "HelpText", formControl.Name); // most elements has a help text
+                    formControl.HelpText = this.GetLabel(formControl.HelpText); // most elements has a help text
                     string textValue = formControl.GetPropertyValueSS<String>("Text");
                     if(!String.IsNullOrEmpty(textValue))
                     {
-                        formControl.SetPropertyValueSS("Text", this.GetLabel(textValue, "FormControl", "Text", formControl.Name));
+                        formControl.SetPropertyValueSS("Text", this.GetLabel(textValue));
                     }
 
                     string labelValue = formControl.GetPropertyValueSS<String>("Label");
                     if (!String.IsNullOrEmpty(labelValue))
                     {
-                        formControl.SetPropertyValueSS("Label", this.GetLabel(labelValue, "FormControl", "Label", formControl.Name));
+                        formControl.SetPropertyValueSS("Label", this.GetLabel(labelValue));
                     }
 
                     //string helpTextValue = formControl.GetPropertyValueSS<String>("HelpText");
@@ -454,13 +396,13 @@ namespace SSD365VSAddIn.Labels
                     string captionValue = formControl.GetPropertyValueSS<String>("Caption");
                     if (!String.IsNullOrEmpty(captionValue))
                     {
-                        formControl.SetPropertyValueSS("Caption", this.GetLabel(captionValue, "FormControl", "Caption", formControl.Name));
+                        formControl.SetPropertyValueSS("Caption", this.GetLabel(captionValue));
                     }
 
                     string exportValue = formControl.GetPropertyValueSS<String>("ExportLabel");
                     if (!String.IsNullOrEmpty(exportValue))
                     {
-                        formControl.SetPropertyValueSS("ExportLabel", this.GetLabel(exportValue, "FormControl", "ExportLabel", formControl.Name));
+                        formControl.SetPropertyValueSS("ExportLabel", this.GetLabel(exportValue));
                     }
 
                     if (formControl.FormControlExtension != null && formControl.FormControlExtension.ExtensionProperties != null)
@@ -472,12 +414,12 @@ namespace SSD365VSAddIn.Labels
 
                             if (extProperty.Name.Equals("PlaceholderText", StringComparison.InvariantCultureIgnoreCase))
                             {
-                                extProperty.Value = this.GetLabel(extProperty.Value, "FormControlExtension", "PlaceholderText", formControl.Name);
+                                extProperty.Value = this.GetLabel(extProperty.Value);
                                 //formControl.SetPropertyValueSS("PlaceholderText", this.GetLabel(placeholderTextValue));
                             }
                             else if (extProperty.Name.Equals("ExportLabel", StringComparison.InvariantCultureIgnoreCase))
                             {
-                                extProperty.Value = this.GetLabel(extProperty.Value, "FormControlExtension", "ExportLabel", formControl.Name); ;
+                                extProperty.Value = this.GetLabel(extProperty.Value); ;
                             }
                         }
                     }
@@ -517,7 +459,7 @@ namespace SSD365VSAddIn.Labels
 
             if (string.IsNullOrEmpty(tableExists) == false)
             {
-                this.iForm.FormDesign.Caption = this.GetLabel(this.iForm.FormDesign.Caption, "FromExtensionDesign", "Caption");
+                this.iForm.FormDesign.Caption = this.GetLabel(this.iForm.FormDesign.Caption);
 
                 this.RunEnumerator(this.iForm.FormDesign.VisualChildren);
             }
@@ -531,17 +473,17 @@ namespace SSD365VSAddIn.Labels
                 var formControl = item as IFormControl;
                 if (formControl != null)
                 {
-                    formControl.HelpText = this.GetLabel(formControl.HelpText, "FromExtensionControl", "HelpText"); // most elements has a help text
+                    formControl.HelpText = this.GetLabel(formControl.HelpText); // most elements has a help text
                     string textValue = formControl.GetPropertyValueSS<String>("Text");
                     if (!String.IsNullOrEmpty(textValue))
                     {
-                        formControl.SetPropertyValueSS("Text", this.GetLabel(textValue, "FromExtensionControl", "Text"));
+                        formControl.SetPropertyValueSS("Text", this.GetLabel(textValue));
                     }
 
                     string labelValue = formControl.GetPropertyValueSS<String>("Label");
                     if (!String.IsNullOrEmpty(labelValue))
                     {
-                        formControl.SetPropertyValueSS("Label", this.GetLabel(labelValue, "FromExtensionControl", "Label"));
+                        formControl.SetPropertyValueSS("Label", this.GetLabel(labelValue));
                     }
 
                     //string helpTextValue = formControl.GetPropertyValueSS<String>("HelpText");
@@ -553,13 +495,13 @@ namespace SSD365VSAddIn.Labels
                     string captionValue = formControl.GetPropertyValueSS<String>("Caption");
                     if (!String.IsNullOrEmpty(captionValue))
                     {
-                        formControl.SetPropertyValueSS("Caption", this.GetLabel(captionValue, "FromExtensionControl", "Caption"));
+                        formControl.SetPropertyValueSS("Caption", this.GetLabel(captionValue));
                     }
 
                     string exportValue = formControl.GetPropertyValueSS<String>("ExportLabel");
                     if (!String.IsNullOrEmpty(exportValue))
                     {
-                        formControl.SetPropertyValueSS("ExportLabel", this.GetLabel(exportValue, "FromExtensionControl", "ExportLabel"));
+                        formControl.SetPropertyValueSS("ExportLabel", this.GetLabel(exportValue));
                     }
 
                     if (formControl.FormControlExtension != null && formControl.FormControlExtension.ExtensionProperties != null)
@@ -571,12 +513,12 @@ namespace SSD365VSAddIn.Labels
 
                             if (extProperty.Name.Equals("PlaceholderText", StringComparison.InvariantCultureIgnoreCase))
                             {
-                                extProperty.Value = this.GetLabel(extProperty.Value, "FromExtensionControlExtension", "PlaceholderText");
+                                extProperty.Value = this.GetLabel(extProperty.Value);
                                 //formControl.SetPropertyValueSS("PlaceholderText", this.GetLabel(placeholderTextValue));
                             }
                             else if (extProperty.Name.Equals("ExportLabel", StringComparison.InvariantCultureIgnoreCase))
                             {
-                                extProperty.Value = this.GetLabel(extProperty.Value, "FromExtensionControlExtension", "ExportLabel"); ;
+                                extProperty.Value = this.GetLabel(extProperty.Value); ;
                             }
                         }
                     }
@@ -610,8 +552,8 @@ namespace SSD365VSAddIn.Labels
                                         .FirstOrDefault();
             if(String.IsNullOrEmpty(securityDutyexists) == false)
             {
-                this.iSecurityDuty.Label = this.GetLabel(this.iSecurityDuty.Label, "SecurityDuty", "Label");
-                this.iSecurityDuty.Description = this.GetLabel(this.iSecurityDuty.Description, "SecurityDuty", "Description");
+                this.iSecurityDuty.Label = this.GetLabel(this.iSecurityDuty.Label);
+                this.iSecurityDuty.Description = this.GetLabel(this.iSecurityDuty.Description);
             }
         }
 
@@ -634,8 +576,8 @@ namespace SSD365VSAddIn.Labels
                                         .FirstOrDefault();
             if (String.IsNullOrEmpty(securityDutyexists) == false)
             {
-                this.iSecurityPrev.Label = this.GetLabel(this.iSecurityPrev.Label, "SecurityPrivilege", "Label");
-                this.iSecurityPrev.Description = this.GetLabel(this.iSecurityPrev.Description, "SecurityPrivilege", "Label");
+                this.iSecurityPrev.Label = this.GetLabel(this.iSecurityPrev.Label);
+                this.iSecurityPrev.Description = this.GetLabel(this.iSecurityPrev.Description);
             }
         }
         public override void setElementType(IRootElement selectedElement)
@@ -657,8 +599,8 @@ namespace SSD365VSAddIn.Labels
                                         .FirstOrDefault();
             if (String.IsNullOrEmpty(securityDutyexists) == false)
             {
-                this.iSecurityRole.Label = this.GetLabel(this.iSecurityRole.Label, "SecurityRole", "Label");
-                this.iSecurityRole.Description = this.GetLabel(this.iSecurityRole.Description, "SecurityRole", "Label");
+                this.iSecurityRole.Label = this.GetLabel(this.iSecurityRole.Label);
+                this.iSecurityRole.Description = this.GetLabel(this.iSecurityRole.Description);
             }
         }
         public override void setElementType(IRootElement selectedElement)
@@ -687,8 +629,8 @@ namespace SSD365VSAddIn.Labels
 
             if (string.IsNullOrEmpty(dataEntityExists) == false)
             {
-                this.iDateEntity.Label = this.GetLabel(this.iDateEntity.Label, "DataEntity", "Label");
-                this.iDateEntity.DeveloperDocumentation = this.GetLabel(this.iDateEntity.DeveloperDocumentation, "DataEntity", "DeveloperDocumentation");
+                this.iDateEntity.Label = this.GetLabel(this.iDateEntity.Label);
+                this.iDateEntity.DeveloperDocumentation = this.GetLabel(this.iDateEntity.DeveloperDocumentation);
 
                 // Apply label on fields
                 var dataEntityView = this.iDateEntity as Microsoft.Dynamics.Framework.Tools.MetaModel.Automation.DataEntityViews.DataEntityView;
@@ -700,8 +642,8 @@ namespace SSD365VSAddIn.Labels
                         var f = fieldsEnum.Current as Microsoft.Dynamics.Framework.Tools.MetaModel.Automation.DataEntityViews.DataEntityViewField;
                         if(f != null)
                         {
-                            f.Label = this.GetLabel(f.Label, "DataEntityField", "Label");
-                            f.HelpText = this.GetLabel(f.HelpText, "DataEntityField", "HelpText");
+                            f.Label = this.GetLabel(f.Label);
+                            f.HelpText = this.GetLabel(f.HelpText);
                         }
                     }
 
@@ -711,7 +653,7 @@ namespace SSD365VSAddIn.Labels
                         var f = groupsEnum.Current as Microsoft.Dynamics.Framework.Tools.MetaModel.Automation.DataEntityViews.FieldGroup;
                         if(f != null)
                         {
-                            f.Label = this.GetLabel(f.Label, "DataEntityFieldGroup", "Label");
+                            f.Label = this.GetLabel(f.Label);
                         }
                     }
                 }
@@ -753,9 +695,9 @@ namespace SSD365VSAddIn.Labels
                         var f = fieldsEnum.Current as Microsoft.Dynamics.Framework.Tools.MetaModel.Automation.DataEntityViews.DataEntityViewField;
                         if (f != null)
                         {
-                            f.Label = this.GetLabel(f.Label, "DataEntityExtensionField", "Label");
-                            f.HelpText = this.GetLabel(f.HelpText, "DataEntityExtensionField", "HelpText");
-                            f.GroupPrompt = this.GetLabel(f.GroupPrompt, "DataEntityExtensionField", "GroupPrompt");
+                            f.Label = this.GetLabel(f.Label);
+                            f.HelpText = this.GetLabel(f.HelpText);
+                            f.GroupPrompt = this.GetLabel(f.GroupPrompt);
                         }
                     }
 
@@ -765,7 +707,7 @@ namespace SSD365VSAddIn.Labels
                         var f = groupsEnum.Current as Microsoft.Dynamics.Framework.Tools.MetaModel.Automation.DataEntityViews.FieldGroup;
                         if (f != null)
                         {
-                            f.Label = this.GetLabel(f.Label, "DataEntityExtensionFieldGroup", "Label");
+                            f.Label = this.GetLabel(f.Label);
                         }
                     }
                 }

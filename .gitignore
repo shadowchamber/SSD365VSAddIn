@@ -246,5 +246,3 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
-
-OutputDlls/*

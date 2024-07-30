@@ -1,9 +1,12 @@
 # Visual studio add-in for dynamics 365 finance and operations
 Extensions to enhance the development experience, mostly with just the mouse.
-These can only be done from the designer windows of the source objects.
+These can only be done from the designer windows of the source objects
 
 __Version support__: 10.0.10 and higher. If you want to install this for a system prior to 10.0.10, then see the __How to install__ section
 
+__VS 2019__: For VS2019, select the VS2019 branch and follow details from there and manually install
+
+__Support for VS2022 added__
 * [How to install the extension](#how-to-install-the-extension)
 * [Features](#features)
   * [Settings based object creation](#settings-based-object-creation)
@@ -27,7 +30,7 @@ __Version support__: 10.0.10 and higher. If you want to install this for a syste
 
 **Option 1: Run from powershell script**
   ```Powershell
-  iex (iwr "https://raw.githubusercontent.com/shadowchamber/SSD365VSAddIn/master/Misc/install.ps1").Content
+  iex (iwr "https://raw.githubusercontent.com/shashisadasivan/SSD365VSAddIn/master/Misc/install.ps1").Content
   ```
   
 **Option 2: Mannual installation** (works for non admin users)

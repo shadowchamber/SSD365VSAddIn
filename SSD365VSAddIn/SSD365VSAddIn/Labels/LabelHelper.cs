@@ -153,32 +153,7 @@ namespace SSD365VSAddIn.Labels
             //return labelFile;
         }
 
-        public static string MakeCamelCase(string labelText)
-        {
-            var punctuation = labelText.Where(Char.IsPunctuation).Distinct().ToArray();
-            var words = labelText.Split().Select(x => x.Trim(punctuation));
-            string res = "";
-
-            foreach (var word in words)
-            {
-                if (word.Length == 0)
-                {
-                    continue;
-                }
-                else if (word.Length == 1)
-                {
-                    res += Char.ToUpperInvariant(word[0]);
-                }
-                else if (word.Length > 1)
-                {
-                    res += Char.ToUpperInvariant(word[0]) + word.Substring(1);
-                }
-            }
-
-            return res.Replace(" ", "");
-        }
-
-        public static string FindOrCreateLabel(string labelText, string labelCode = "")
+        public static string FindOrCreateLabel(string labelText)
         {
             string newLabelId = String.Empty;
 
@@ -194,15 +169,8 @@ namespace SSD365VSAddIn.Labels
                 // Construct a label id that will be unique
                 //string labelId = $"{elementName}{propertyName}";
 
-                string labelId = labelCode;
-
-                if (string.IsNullOrEmpty(labelId))
-                {
-                    labelId = (Settings.FetchSettings.FindOrCreateSettings().UseCamelCaseForLabels
-                                        ? MakeCamelCase(labelText)
-                                        : System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(labelText))
-                                        .Replace(" ", "");
-                }
+                string labelId = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(labelText)
+                                    .Replace(" ", "");
 
                 // #35 replace chars with short text
                 var replaceableChars = LabelHelper.GetReplaceableLabelChars();
@@ -266,35 +234,6 @@ namespace SSD365VSAddIn.Labels
             }
 
             return newLabelId;
-        }
-
-        public static string GetLabelTextFromLabelFileWithLanguage(string labelFileCode, string lang, string labelId)
-        {
-            string res = "";
-
-            var filenames = Common.CommonUtil.GetModelSaveService().GetLabelFileNames();
-            var fileName = filenames.Where(l => l.StartsWith(labelFileCode) && l.Contains(lang)).FirstOrDefault();
-
-            var labelFile = Common.CommonUtil.GetModelSaveService().GetLabelFile(fileName);
-
-            if (labelFile == null)
-            {
-                return res;
-            }
-
-            LabelControllerFactory factory = new LabelControllerFactory();
-            LabelEditorController labelController = factory.GetOrCreateLabelController(labelFile, Common.CommonUtil.GetVSApplicationContext());
-            labelController.LabelSearchOption = SearchOption.MatchExactly;
-            labelController.IsMatchExactly = true;
-
-            var label = labelController.Labels.Where(l => l.ID.Equals(labelId, StringComparison.InvariantCultureIgnoreCase))
-                                        .FirstOrDefault();
-            if (label != null)
-            {
-                res = label.Description;
-            }
-
-            return res;
         }
 
         public static LabelContent FindLabelGlobally(string labelIdText)

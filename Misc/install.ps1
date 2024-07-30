@@ -1,4 +1,4 @@
-$repo = "shadowchamber/SSD365VSAddIn"
+$repo = "shashisadasivan/SSD365VSAddIn"
 $releases = "https://api.github.com/repos/$repo/releases"
 #Enter the Flder where you want the files to be downloaded
 $addinPath = "C:\d365_VS_AddIns" 
@@ -15,7 +15,7 @@ $tag = (Invoke-WebRequest -Uri $releases -UseBasicParsing | ConvertFrom-Json)[0]
 
 #Write-Host $tag
 
-$files = @("Newtonsoft.Json.dll",  "SSD365VSAddIn.dll")
+$files = @("Newtonsoft.Json.dll",  "SSD365VSAddIn.dll", "Microsoft.VisualStudio.Interop.dll", "envdte80.dll")
 
 Write-Host Downloading files
 foreach ($file in $files) 
