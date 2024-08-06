@@ -46,7 +46,7 @@ namespace SSD365VSAddIn.Common
         /// <returns>VSApplicationContext</returns>
         internal static Microsoft.Dynamics.Framework.Tools.Labels.VSApplicationContext GetVSApplicationContext()
         {
-            var context = new Microsoft.Dynamics.Framework.Tools.Labels.VSApplicationContext(CommonUtil.DTE.DTE);
+            var context = new Microsoft.Dynamics.Framework.Tools.Labels.VSApplicationContext(CommonUtil.DTE.DTE as IServiceProvider);
             return context;
         }
 
